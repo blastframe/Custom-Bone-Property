@@ -1,40 +1,42 @@
-# Add/Remove Custom Bone Properties (Blender Add-on)
+# Add/Remove Custom Bone Properties for Blender
 
-This Blender add-on allows you to easily add or remove custom properties to every bone in the active armature. It supports a variety of property types and provides a flexible interface for customizing property names and values.
+Easily add or remove custom properties on every bone in the active armature with this Blender add-on. Designed for riggers and technical artists, it provides a flexible interface for batch property management, supporting a wide range of property types and naming conventions.
 
 ## Features
 
-- Add or remove custom properties to all bones in the selected armature
-- Supports property types: Integer, Float, Float Array, Integer Array, Boolean, Boolean Array, String
+- Add or remove custom properties on all bones in the selected armature
+- Supports Integer, Float, Boolean, String, and array property types
+- Set min, max, and default values for numeric and array properties
 - Customizable property name format, separator, and suffix
-- Set min/max/default values for numeric and array properties
-- Integrated into the object context menu for easy access
+- Works in Object, Pose, and Edit modes
+- Accessible from the right-click context menu in 3D Viewport (Object, Armature, and Pose modes)
+- UI updates automatically after property changes
 
 ## Installation
 
 1. Download or clone this repository.
 2. In Blender, go to **Edit > Preferences > Add-ons > Install**.
 3. Select the `__init__.py` file from this repository.
-4. Enable the add-on in the list.
+4. Enable the add-on in the Add-ons list.
 
 ## Usage
 
 1. Select an armature object in Object, Pose, or Edit mode.
-2. Right-click to open the context menu and choose **Add Custom Bone Property**.
-3. Configure the property type, values, and naming options in the dialog.
-4. Click **OK** to add or remove the custom property on all bones.
+2. Right-click in the 3D Viewport and choose **Custom Bone Property** from the context menu.
+3. In the dialog, choose the property type, method (Add/Remove), and configure values and naming options.
+4. Click **OK** to apply the operation to all bones.
 
-## Property Options
+### Property Options
 
-- **Property Type**: Choose the type of property to add (Int, Float, Array, etc.)
-- **Min/Max/Default Values**: Set the range and default for numeric/array types
+- **Property Type**: Integer, Float, Boolean, String, Integer Array, Float Array, Boolean Array
 - **Method**: Add or Remove properties
-- **Separator & Suffix**: Customize the property name
-- **Property Name Format**: Use `{armature}`, `{bone}`, `{suffix}` tokens
+- **Min/Max/Default Values**: For numeric and array types
+- **Separator & Suffix**: Customize property name formatting
+- **Property Name Format**: Use `{armature}`, `{bone}`, `{suffix}` tokens for dynamic names
 
-## Example
+### Example
 
-Add an integer property named `Armature_Bone_TO` to all bones:
+To add an integer property named `Armature_Bone_TO` to all bones:
 
 - Set Property Type: `Integer`
 - Suffix: `TO`
@@ -46,10 +48,14 @@ Add an integer property named `Armature_Bone_TO` to all bones:
 2. Search for "Add/Remove Custom Bone Properties".
 3. Uncheck the box to disable or click **Remove** to uninstall.
 
+## Support
+
+For questions or support, visit [Blastframe Contact](https://blastframe.com/contact/).
+
 ## Author
 
 Blastframe
 
 ## License
 
-[MIT](LICENSE)
+This add-on is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
