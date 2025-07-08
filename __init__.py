@@ -279,7 +279,7 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
 
         self.report(
             {"INFO"},
-            f"{action} custom property from {bone_count} bones in {armature.name}",
+            f"{action} custom property to {bone_count} bones in {armature.name}",
         )
 
         return {"FINISHED"}
