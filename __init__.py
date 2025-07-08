@@ -24,10 +24,10 @@ from bpy.utils import register_class, unregister_class
 
 
 class BLASTFRAME_OT_add_custom_bone_prop(Operator):
-    """Add a custom property to each bone in the active armature"""
+    """Add/Remove a custom property to each bone in the active armature"""
 
     bl_idname = "object.add_custom_bone_prop"
-    bl_label = "Add Custom Bone Property"
+    bl_label = "Custom Bone Property"
     bl_options = {"REGISTER", "UNDO"}
 
     prop_type: EnumProperty(
@@ -43,6 +43,16 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
             ("STRING", "String", "Add a string custom property"),
         ],
         default="INT",
+    )
+
+    custom_method: EnumProperty(
+        name="Method",
+        description="Method to use for adding the custom property",
+        items=[
+            ("ADD", "Add", "Add a new custom property"),
+            ("REMOVE", "Remove", "Remove existing custom properties"),
+        ],
+        default="ADD",
     )
 
     min_int_value: IntProperty(
@@ -79,10 +89,11 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
         default=False,
     )
 
-    default_boolean_array_value: BoolProperty(
+    default_boolean_array_value: BoolVectorProperty(
         name="Default Boolean Array Value",
         description="Default value for the custom property",
-        default=False,
+        default=(False, False, False),
+        size=3,
     )
 
     default_string_value: StringProperty(
@@ -94,39 +105,31 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
     default_min_int_array_value: IntVectorProperty(
         name="Default Int Array Value",
         description="Default value for the custom property",
-        default=[0],
+        default=(0, 0, 0),
+        size=3,
         min=0,
     )
 
     default_max_int_array_value: IntVectorProperty(
         name="Default Int Array Value",
         description="Default value for the custom property",
-        default=[1],
+        default=(1, 1, 1),
         min=0,
     )
 
     default_min_float_array_value: FloatVectorProperty(
         name="Default Float Array Value",
         description="Default value for the custom property",
-        default=[0.0],
+        default=(0.0, 0.0, 0.0),
+        size=3,
         min=0.0,
     )
 
     default_max_float_array_value: FloatVectorProperty(
         name="Default Float Array Value",
         description="Default value for the custom property",
-        default=[1.0],
+        default=(1.0, 1.0, 1.0),
         min=0.0,
-    )
-
-    method: EnumProperty(
-        name="Method",
-        description="Method to use for adding the custom property",
-        items=[
-            ("ADD", "Add", "Add a new custom property"),
-            ("REMOVE", "Remove", "Remove existing custom properties"),
-        ],
-        default="ADD",
     )
 
     separator: EnumProperty(
@@ -162,99 +165,102 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
 
     def execute(self, context):
         armature = context.object
-        if armature and armature.type == "ARMATURE":
-            bone_count = 0
+        if context.object is None or armature.type != "ARMATURE":
+            self.report({"ERROR"}, "No active armature found")
+            return {"CANCELLED"}
+        bone_count = 0
+        bones = armature.pose.bones
+        prev_mode = context.mode
+        if prev_mode == "OBJECT":
             bones = armature.pose.bones
-            prev_mode = context.mode
-            if prev_mode == "OBJECT":
-                bones = armature.data.bones
-            elif prev_mode == "POSE":
-                bones = context.selected_pose_bones
-            elif prev_mode == "EDIT_ARMATURE":
-                # switch to pose mode to access pose bones
-                bpy.ops.object.mode_set(mode="POSE")
-                bones = armature.pose.bones
+        elif prev_mode == "POSE":
+            bones = context.selected_pose_bones
+        elif prev_mode == "EDIT_ARMATURE":
+            # switch to pose mode to access pose bones
+            bpy.ops.object.mode_set(mode="POSE")
+            bones = armature.pose.bones
 
-            for bone in bones:
-                # custom property
-                prop_name = self.prop_name_format.format(
-                    armature=self.clean_string(armature.name),
-                    bone=self.clean_string(bone.name),
-                    suffix=self.suffix,
-                    separator=self.separator,
-                )
-                if self.method == "ADD":
-                    if prop_name not in bone:
-                        if self.prop_type == "INT":
-                            bone[prop_name] = self.min_int_value
-                            ui = bone.id_properties_ui(prop_name)
-                            ui.update(
-                                description=f"Custom {self.prop_type} property for {armature.name} bone {bone.name}",
-                                min=self.min_int_value,
-                                max=self.max_int_value,
-                            )
-                        elif self.prop_type == "BOOLEAN":
-                            bone[prop_name] = self.default_boolean_value
-                            ui = bone.id_properties_ui(prop_name)
-                            ui.update(
-                                description=f"Custom {self.prop_type} property for {armature.name} bone {bone.name}",
-                            )
-                        elif self.prop_type == "FLOAT":
-                            bone[prop_name] = self.default_min_float_value
-                            ui = bone.id_properties_ui(prop_name)
-                            ui.update(
-                                description=f"Custom {self.prop_type} property for {armature.name} bone {bone.name}",
-                                min=self.min_float_value,
-                                max=self.max_float_value,
-                            )
-                        elif self.prop_type == "FLOAT_ARRAY":
-                            bone[prop_name] = [
-                                self.default_min_float_array_value,
-                                self.default_max_float_array_value,
-                            ]
-                            ui = bone.id_properties_ui(prop_name)
-                            ui.update(
-                                description=f"Custom {self.prop_type} property for {armature.name} bone {bone.name}",
-                                min=self.default_min_float_array_value,
-                                max=self.default_max_float_array_value,
-                            )
-                        elif self.prop_type == "INT_ARRAY":
-                            bone[prop_name] = [
-                                self.default_min_int_array_value,
-                                self.default_max_int_array_value,
-                            ]
-                            ui = bone.id_properties_ui(prop_name)
-                            ui.update(
-                                description=f"Custom {self.prop_type} property for {armature.name} bone {bone.name}",
-                                min=self.default_min_int_array_value,
-                                max=self.default_max_int_array_value,
-                            )
-                        elif self.prop_type == "BOOLEAN_ARRAY":
-                            bone[prop_name] = [
-                                self.default_boolean_array_value,
-                                self.default_boolean_array_value,
-                            ]
-                            ui = bone.id_properties_ui(prop_name)
-                            ui.update(
-                                description=f"Custom {self.prop_type} property for {armature.name} bone {bone.name}",
-                                min=self.default_boolean_array_value,
-                                max=self.default_boolean_array_value,
-                            )
-                        elif self.prop_type == "STRING":
-                            bone[prop_name] = self.default_string_value
-                            ui = bone.id_properties_ui(prop_name)
-                            ui.update(
-                                description=f"Custom {self.prop_type} property for {armature.name} bone {bone.name}",
-                            )
+        for bone in bones:
+            # custom property
+            prop_name = self.prop_name_format.format(
+                armature=self.clean_string(armature.name),
+                bone=self.clean_string(bone.name),
+                suffix=self.suffix,
+                separator=self.separator,
+            )
+            if self.custom_method == "ADD":
+                if prop_name not in bone:
+                    if self.prop_type == "INT":
+                        bone[prop_name] = self.min_int_value
+                        ui = bone.id_properties_ui(prop_name)
+                        ui.update(
+                            description=f"Custom {self.prop_type} property for {armature.name} bone {bone.name}",
+                            min=self.min_int_value,
+                            max=self.max_int_value,
+                        )
+                    elif self.prop_type == "BOOLEAN":
+                        bone[prop_name] = self.default_boolean_value
+                        ui = bone.id_properties_ui(prop_name)
+                        ui.update(
+                            description=f"Custom {self.prop_type} property for {armature.name} bone {bone.name}",
+                        )
+                    elif self.prop_type == "FLOAT":
+                        bone[prop_name] = self.default_min_float_value
+                        ui = bone.id_properties_ui(prop_name)
+                        ui.update(
+                            description=f"Custom {self.prop_type} property for {armature.name} bone {bone.name}",
+                            min=self.min_float_value,
+                            max=self.max_float_value,
+                        )
+                    elif self.prop_type == "FLOAT_ARRAY":
+                        bone[prop_name] = [
+                            self.default_min_float_array_value,
+                            self.default_max_float_array_value,
+                        ]
+                        ui = bone.id_properties_ui(prop_name)
+                        ui.update(
+                            description=f"Custom {self.prop_type} property for {armature.name} bone {bone.name}",
+                            min=self.default_min_float_array_value,
+                            max=self.default_max_float_array_value,
+                        )
+                    elif self.prop_type == "INT_ARRAY":
+                        bone[prop_name] = [
+                            self.default_min_int_array_value,
+                            self.default_max_int_array_value,
+                        ]
+                        ui = bone.id_properties_ui(prop_name)
+                        ui.update(
+                            description=f"Custom {self.prop_type} property for {armature.name} bone {bone.name}",
+                            min=self.default_min_int_array_value,
+                            max=self.default_max_int_array_value,
+                        )
+                    elif self.prop_type == "BOOLEAN_ARRAY":
+                        bone[prop_name] = [
+                            self.default_boolean_array_value,
+                            self.default_boolean_array_value,
+                        ]
+                        ui = bone.id_properties_ui(prop_name)
+                        ui.update(
+                            description=f"Custom {self.prop_type} property for {armature.name} bone {bone.name}",
+                            min=self.default_boolean_array_value,
+                            max=self.default_boolean_array_value,
+                        )
+                    elif self.prop_type == "STRING":
+                        bone[prop_name] = self.default_string_value
+                        ui = bone.id_properties_ui(prop_name)
+                        ui.update(
+                            description=f"Custom {self.prop_type} property for {armature.name} bone {bone.name}",
+                        )
 
-                        bone_count += 1
-                elif self.method == "REMOVE":
-                    if prop_name in bone:
-                        del bone[prop_name]
-                        bone_count += 1
-            bpy.ops.object.mode_set(mode=prev_mode)
+                    bone_count += 1
+            elif self.custom_method == "REMOVE":
+                if prop_name in bone:
+                    del bone[prop_name]
+                    bone_count += 1
 
-        action = "Added" if self.method == "ADD" else "Removed"
+        bpy.ops.object.mode_set(mode=prev_mode)
+
+        action = "Added" if self.custom_method == "ADD" else "Removed"
 
         if bone_count == 0:
             self.report({"INFO"}, "No custom properties found to remove")
@@ -275,6 +281,8 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
     def draw(self, context):
         layout = self.layout
         layout.prop(self, "prop_type")
+        layout.prop(self, "custom_method")
+
         if self.prop_type == "INT":
             layout.prop(self, "min_int_value")
             layout.prop(self, "max_int_value")
@@ -294,10 +302,32 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
         elif self.prop_type == "STRING":
             layout.prop(self, "default_string_value")
 
-        layout.prop(self, "method")
         layout.prop(self, "separator")
         layout.prop(self, "suffix")
         layout.prop(self, "prop_name_format")
+
+    @classmethod
+    def poll(cls, context):
+        """Check if the active object is an armature."""
+        return context.object is not None and context.object.type == "ARMATURE"
+
+    @classmethod
+    def description(cls, context, properties) -> str:
+        description_text = ""
+        if context.object is None or context.object.type != "ARMATURE":
+            return "No active armature found"
+        if properties.custom_method == "ADD":
+            description_text = (
+                f"Add custom property to each bone in the active armature: "
+                f"{properties.prop_name_format.format(armature=context.object.name, bone='', suffix=properties.suffix)}"
+            )
+        else:
+            description_text = (
+                f"Remove custom property from each bone in the active armature: "
+                f"{properties.prop_name_format.format(armature=context.object.name, bone='', suffix=properties.suffix)}"
+            )
+
+        return description_text
 
 
 def custom_prop_menu(self, context):
@@ -308,7 +338,7 @@ def custom_prop_menu(self, context):
     layout.operator_context = "INVOKE_DEFAULT"
     layout.operator(
         BLASTFRAME_OT_add_custom_bone_prop.bl_idname,
-        text="Add Custom Bone Property",
+        text="Custom Bone Property",
         icon="BONE_DATA",
     )
 
