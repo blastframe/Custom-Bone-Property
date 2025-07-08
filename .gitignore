@@ -1,0 +1,8 @@
+# Ignore macOS system files
+.DS_Store
+
+# Ignore zip archives
+*.zip
+
+# Ignore release bundling script
+bundle_release.py

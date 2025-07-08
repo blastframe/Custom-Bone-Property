@@ -5,6 +5,7 @@ bl_info = {
     "author": "Blastframe",
     "version": (1, 0, 0),
     "description": "Adds/Removes a custom property to each bone in the active armature",
+    "doc_url": "https://blastframe.com/contact/",
 }
 
 import bpy
