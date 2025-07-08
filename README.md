@@ -1,8 +1,6 @@
-# Custom Bone Property for Blender
-
 ![Custom Bone Property](img/custom-bone-property.jpg)
 
-Easily add or remove custom properties on bones in the active armature with this Blender add-on. Designed for riggers and technical artists, it provides a flexible interface for batch property management, supporting a wide range of property types and naming conventions.
+Easily add or remove custom properties on bones in the active armature with this **Blender** add-on. Designed for riggers and technical artists, it provides a flexible interface for batch property management, supporting a wide range of property types and naming conventions.
 
 **Selection behavior:**
 
@@ -100,4 +98,4 @@ For questions or support, contact [Blastframe](https://blastframe.com/contact/).
 
 ## License
 
-This add-on is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This add-on is licensed under the GPL v3 License. See the [LICENSE](LICENSE) file for details.
