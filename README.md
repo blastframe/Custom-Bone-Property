@@ -34,7 +34,7 @@ Easily add or remove custom properties on bones in the active armature with this
 ### Video Tutorial
 
 For a quick demonstration of the add-on in action, watch the video below:
-[![Custom Bone Property](https://img.youtube.com/vi/TUGGjXJURmU/0.jpg)](https://www.youtube.com/watch?v=TUGGjXJURmU)
+[![Custom Bone Property](https://img.youtube.com/vi/PCNR6_Na6Tk/0.jpg)](https://www.youtube.com/watch?v=PCNR6_Na6Tk)
 
 ### Property Options
 
