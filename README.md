@@ -85,13 +85,13 @@ To add an integer property named `Armature_Bone_TO` to all bones:
 2. Search for "Add/Remove Custom Bone Properties".
 3. Uncheck the box to disable or click **Remove** to uninstall.
 
-## Support
-
-For questions or support, visit [Blastframe Contact](https://blastframe.com/contact/).
-
 ## Author
 
 Blastframe
+
+## Support
+
+For questions or support, contact [Blastframe](https://blastframe.com/contact/).
 
 ## Acknowledgements
 
