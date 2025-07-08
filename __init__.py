@@ -23,6 +23,13 @@ from bpy.props import (
 from bpy.utils import register_class, unregister_class
 
 
+# Redraw all regions in all areas (for UI update after property changes)
+def refresh():
+    for area in bpy.context.screen.areas:
+        for region in area.regions:
+            region.tag_redraw()
+
+
 class BLASTFRAME_OT_add_custom_bone_prop(Operator):
     """Add/Remove a custom property to each bone in the active armature"""
 
@@ -30,6 +37,7 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
     bl_label = "Custom Bone Property"
     bl_options = {"REGISTER", "UNDO"}
 
+    # Property type selection
     prop_type: EnumProperty(
         name="Property Type",
         description="Type of the custom property",
@@ -45,6 +53,7 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
         default="INT",
     )
 
+    # Add or remove method
     custom_method: EnumProperty(
         name="Method",
         description="Method to use for adding the custom property",
@@ -55,13 +64,13 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
         default="ADD",
     )
 
+    # Integer property min/max
     min_int_value: IntProperty(
         name="Min Value",
         description="Minimum value for the custom property",
         default=0,
         min=0,
     )
-
     max_int_value: IntProperty(
         name="Max Value",
         description="Maximum value for the custom property",
@@ -69,13 +78,13 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
         min=0,
     )
 
+    # Float property min/max
     min_float_value: FloatProperty(
         name="Min Float Value",
         description="Minimum value for the custom property",
         default=0.0,
         min=0.0,
     )
-
     max_float_value: FloatProperty(
         name="Max Float Value",
         description="Maximum value for the custom property",
@@ -83,25 +92,25 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
         min=0.0,
     )
 
+    # Default values for boolean, string, and arrays
     default_boolean_value: BoolProperty(
         name="Default Boolean Value",
         description="Default value for the custom property",
         default=False,
     )
-
     default_boolean_array_value: BoolVectorProperty(
         name="Default Boolean Array Value",
         description="Default value for the custom property",
         default=(False, False, False),
         size=3,
     )
-
     default_string_value: StringProperty(
         name="Default String Value",
         description="Default value for the custom property",
         default="Hello World",
     )
 
+    # Default values for int/float arrays
     default_min_int_array_value: IntVectorProperty(
         name="Default Int Array Value",
         description="Default value for the custom property",
@@ -109,14 +118,12 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
         size=3,
         min=0,
     )
-
     default_max_int_array_value: IntVectorProperty(
         name="Default Int Array Value",
         description="Default value for the custom property",
         default=(1, 1, 1),
         min=0,
     )
-
     default_min_float_array_value: FloatVectorProperty(
         name="Default Float Array Value",
         description="Default value for the custom property",
@@ -124,7 +131,6 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
         size=3,
         min=0.0,
     )
-
     default_max_float_array_value: FloatVectorProperty(
         name="Default Float Array Value",
         description="Default value for the custom property",
@@ -132,6 +138,7 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
         min=0.0,
     )
 
+    # Separator and suffix for property name
     separator: EnumProperty(
         name="Separator",
         description="Separator to use for the custom property name",
@@ -142,13 +149,11 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
         ],
         default="_",
     )
-
     suffix: StringProperty(
         name="Suffix",
         description="Suffix to append to the custom property name",
         default="TO",
     )
-
     prop_name_format: StringProperty(
         name="Property Name Format",
         description="Format for the custom property name. Use {armature} and {bone} as tokens.",
@@ -171,17 +176,19 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
         bone_count = 0
         bones = armature.pose.bones
         prev_mode = context.mode
+
+        # Switch to pose mode if needed to access pose bones
         if prev_mode == "OBJECT":
+            bpy.ops.object.mode_set(mode="POSE")
             bones = armature.pose.bones
         elif prev_mode == "POSE":
             bones = context.selected_pose_bones
         elif prev_mode == "EDIT_ARMATURE":
-            # switch to pose mode to access pose bones
             bpy.ops.object.mode_set(mode="POSE")
             bones = armature.pose.bones
 
         for bone in bones:
-            # custom property
+            # Build the custom property name using the format string and tokens
             prop_name = self.prop_name_format.format(
                 armature=self.clean_string(armature.name),
                 bone=self.clean_string(bone.name),
@@ -190,6 +197,7 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
             )
             if self.custom_method == "ADD":
                 if prop_name not in bone:
+                    # Add property based on type
                     if self.prop_type == "INT":
                         bone[prop_name] = self.min_int_value
                         ui = bone.id_properties_ui(prop_name)
@@ -254,11 +262,14 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
 
                     bone_count += 1
             elif self.custom_method == "REMOVE":
+                # Remove property if it exists
                 if prop_name in bone:
                     del bone[prop_name]
                     bone_count += 1
 
+        # Restore previous mode and refresh UI
         bpy.ops.object.mode_set(mode=prev_mode)
+        refresh()
 
         action = "Added" if self.custom_method == "ADD" else "Removed"
 
@@ -274,7 +285,7 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
         return {"FINISHED"}
 
     def invoke(self, context, event):
-        # props dialog
+        # Show the operator properties dialog
         wm = context.window_manager
         return wm.invoke_props_dialog(self)
 
@@ -283,6 +294,7 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
         layout.prop(self, "prop_type")
         layout.prop(self, "custom_method")
 
+        # Show relevant property fields based on type
         if self.prop_type == "INT":
             layout.prop(self, "min_int_value")
             layout.prop(self, "max_int_value")
@@ -302,6 +314,7 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
         elif self.prop_type == "STRING":
             layout.prop(self, "default_string_value")
 
+        # Name formatting options
         layout.prop(self, "separator")
         layout.prop(self, "suffix")
         layout.prop(self, "prop_name_format")
@@ -313,6 +326,7 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
 
     @classmethod
     def description(cls, context, properties) -> str:
+        # Dynamic description for the operator
         description_text = ""
         if context.object is None or context.object.type != "ARMATURE":
             return "No active armature found"
@@ -331,7 +345,7 @@ class BLASTFRAME_OT_add_custom_bone_prop(Operator):
 
 
 def custom_prop_menu(self, context):
-    """Add custom property menu to the object context menu."""
+    """Add custom property menu to the object/armature/pose context menus."""
     if context.object is None or context.object.type != "ARMATURE":
         return
     layout = self.layout
@@ -345,11 +359,15 @@ def custom_prop_menu(self, context):
 
 def register():
     register_class(BLASTFRAME_OT_add_custom_bone_prop)
+    bpy.types.VIEW3D_MT_pose_context_menu.append(custom_prop_menu)
+    bpy.types.VIEW3D_MT_armature_context_menu.append(custom_prop_menu)
     bpy.types.VIEW3D_MT_object_context_menu.append(custom_prop_menu)
 
 
 def unregister():
     bpy.types.VIEW3D_MT_object_context_menu.remove(custom_prop_menu)
+    bpy.types.VIEW3D_MT_armature_context_menu.remove(custom_prop_menu)
+    bpy.types.VIEW3D_MT_pose_context_menu.remove(custom_prop_menu)
     unregister_class(BLASTFRAME_OT_add_custom_bone_prop)
 
 
