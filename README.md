@@ -19,10 +19,35 @@ Easily add or remove custom properties on bones in the active armature with this
 
 ## Installation
 
-1. Download or clone this repository.
-2. In Blender, go to **Edit > Preferences > Add-ons > Install**.
-3. Select the `__init__.py` file from this repository.
-4. Enable the add-on in the Add-ons list.
+To install the **Custom Bone Property** add-on from the released zip file, follow these steps:
+
+## Installing **Custom Bone Property** in Blender 4.x via the _Extensions_ panel (ZIP workflow)
+
+> **Heads-up:** Blender 4 introduced the _Extensions_ manager, but you can still install any ZIP-based add-on/extension locally. These steps assume you already downloaded `Custom-Bone-Property_vX.Y.Z.zip`.
+
+1. **Open Preferences → Extensions**
+
+   - In Blender’s top-bar choose **Edit ▸ Preferences…**.
+   - Click the **Extensions** tab in the sidebar.
+
+2. **Switch to “Get Extensions”** (top of the window).
+
+   - This page lists the on-line catalog, but it also hides the local install option we need.
+
+3. **Install from Disk**
+
+   1. Press the Down Arrow menu in the top-right corner and pick **Install from Disk…**  
+      _Alternatively, drag-and-drop the ZIP onto the Extensions window._
+   2. In the file browser, locate and select `Custom-Bone-Property_vX.Y.Z.zip`.
+   3. Click **Install Extension**. Blender copies the files into your _Local Repository_.
+
+4. **Enable the Add-on**
+
+   - Still in Preferences ▶ Add-ons, go to the **Installed** tab.
+   - Tick the checkbox next to **Custom Bone Property** to load it.
+
+5. **Close Preferences**
+   - The command now appears in the Object and Pose context menus.
 
 ## Usage
 
